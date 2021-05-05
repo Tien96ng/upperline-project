@@ -31,7 +31,7 @@ function App() {
       })
       .catch(error =>  console.log(error));
       return function cleanup() {}
-  }, []); // Second condition in useEffect() is to rerender if there is a change in student state.
+  }, [students]); // Second condition in useEffect() is to rerender if there is a change in student state.
 
   const handleFormChange = (e, field) => {
     let tempNewStudent = {...newStudent};
@@ -52,7 +52,13 @@ function App() {
   }
 
   const handleDeleteStudent = id => {
-    console.log(id)
+    db.collection("students")
+      .doc(id)
+      .delete()
+      .then(() => {
+        console.log("Document successfully deleted!");
+      })
+      .catch(error => console.log("Error Removing Document: ", error));
   }
 
   // Render students in state.
@@ -124,7 +130,6 @@ function App() {
   return (
     <>
       <h1> Hello World </h1>
-      {console.log(students)}
       {showForm && renderForm()}
       <button onClick={() => setShowForm(!showForm)}>{showForm ? "Close Form" : "Add New Student"}</button>
       <div className="container">
