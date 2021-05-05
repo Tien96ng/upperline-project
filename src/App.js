@@ -22,14 +22,16 @@ function App() {
         const tempStudents = [];
 
         snapshot.forEach(doc => {
-          tempStudents.push(doc.data());
+          let id = doc.id;
+          let data = doc.data();
+          tempStudents.push({id, data});
         })
 
         setStudents(tempStudents)
       })
       .catch(error =>  console.log(error));
       return function cleanup() {}
-  }, [students]); // Second condition in useEffect() is to rerender if there is a change in student state.
+  }, []); // Second condition in useEffect() is to rerender if there is a change in student state.
 
   const handleFormChange = (e, field) => {
     let tempNewStudent = {...newStudent};
@@ -51,21 +53,18 @@ function App() {
 
   const handleDeleteStudent = id => {
     console.log(id)
-    db.collection("students").get().then(snapshot => {
-      console.log(snapshot);
-    })
   }
 
   // Render students in state.
-  const renderStudents = () => students.map((student, index) => {
+  const renderStudents = () => students.map(student => {
     return (
-      <div key={index} className="student-card">
-        <h2> Name: {student.name}</h2>
-        <h4> Age: {student.age}</h4>
-        <h4> Graduated: {student.graduated.toString()}</h4>
-        <h4> Point(s): {student.points}</h4>
-        <h4> Joined: {student.joined_at.toDate().toString()} </h4>
-        <button type="click" onClick={() => handleDeleteStudent(index)}>Delete</button>
+      <div key={student.id} className="student-card">
+        <h2> Name: {student.data.name}</h2>
+        <h4> Age: {student.data.age}</h4>
+        <h4> Graduated: {student.data.graduated.toString()}</h4>
+        <h4> Point(s): {student.data.points}</h4>
+        <h4> Joined: {student.data.joined_at.toDate().toString()} </h4>
+        <button type="click" onClick={() => handleDeleteStudent(student.id)}>Delete</button>
       </div>
     )
     
@@ -125,6 +124,7 @@ function App() {
   return (
     <>
       <h1> Hello World </h1>
+      {console.log(students)}
       {showForm && renderForm()}
       <button onClick={() => setShowForm(!showForm)}>{showForm ? "Close Form" : "Add New Student"}</button>
       <div className="container">
