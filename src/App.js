@@ -5,13 +5,16 @@ import './App.css';
 function App() {
   const [students, setStudents] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [editForm, setEditForm] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState(null);
   const [newStudent, setNewStudent] = useState({
     name: "",
     age: 0,
     graduated: true,
     points: 0,
     joined_at: new Date()
-  })
+  });
+
 
   // Pulling data from Firestore.
   useEffect(() => {
@@ -33,6 +36,7 @@ function App() {
       return function cleanup() {}
   }, [students]); // Second condition in useEffect() is to rerender if there is a change in student state.
 
+  // Handle Change in form values
   const handleFormChange = (e, field) => {
     let tempNewStudent = {...newStudent};
     if(field === "name") {
@@ -51,6 +55,7 @@ function App() {
       .add(newStudent);
   }
 
+  // Handle Delete student on Doc Id
   const handleDeleteStudent = id => {
     db.collection("students")
       .doc(id)
@@ -59,6 +64,19 @@ function App() {
         console.log("Document successfully deleted!");
       })
       .catch(error => console.log("Error Removing Document: ", error));
+  }
+
+  const handleEditStudent = id => {
+    setEditForm(true);
+    let tempStudent = {};
+    db.collection("students")
+      .doc(id)
+      .get()
+      .then(snapshot => {
+        tempStudent = snapshot.data();
+      })
+    setSelectedStudent(tempStudent);
+    console.log(selectedStudent);
   }
 
   // Render students in state.
@@ -70,11 +88,20 @@ function App() {
         <h4> Graduated: {student.data.graduated.toString()}</h4>
         <h4> Point(s): {student.data.points}</h4>
         <h4> Joined: {student.data.joined_at.toDate().toString()} </h4>
+        <button type="click" onClick={() => handleEditStudent(student.id)}> Edit {`${student.data.name}`}</button>
+        <br />
         <button type="click" onClick={() => handleDeleteStudent(student.id)}>Delete</button>
       </div>
     )
     
   })
+
+  const renderEditForm = () => {
+    return (
+      <>
+      </>
+    )
+  }
 
   const renderForm = () => {
     return (
@@ -127,11 +154,12 @@ function App() {
     )
   }
 
+
   return (
     <>
       <h1> Hello World </h1>
       {showForm && renderForm()}
-      <button onClick={() => setShowForm(!showForm)}>{showForm ? "Close Form" : "Add New Student"}</button>
+      <button onClick={() => setShowForm(!showForm)}>{showForm ? "Close/Cancel Form" : "Add New Student"}</button>
       <div className="container">
         {students.length > 0 ? renderStudents() : "No Students Available"}
       </div>
